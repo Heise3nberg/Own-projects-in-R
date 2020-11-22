@@ -465,12 +465,6 @@ kosovo_table2$daily_new_cases_l12 = dplyr::lag(kosovo_table2$daily_new_cases,n=1
 kosovo_table2$daily_new_cases_l12[which(is.na(kosovo_table2$daily_new_cases_l12)==T)] = 0
 
 
-save.image("last.RData")
-
-#load("last.RData")
-
-
-############################# Classification Tree
 
 
 
