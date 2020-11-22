@@ -2,3 +2,9 @@
 
 # Contents:
 1. Sofia Air - an analysis and prediction of the air quality in Sofia, based on data for the weather conditions and pm10 concentration in the city.
+
+2. Ted talks - text analysis of two Ted talks videos -> "Do schools kill creativity" and "Depression, the secret we all share"
+
+3. SHARE income analysis - a personal income analysis of survey respondents, situated in 11 European countries, based on the SHARE research dataset.
+
+4. Covid19 policies analysis - an analysis of the numbers of covid-19 cases and different government policies done by countries, grouped in 3 clusters.
