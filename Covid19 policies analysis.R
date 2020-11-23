@@ -25,8 +25,6 @@ library(ggplot2)
 newcovid = read.csv("covid_integrated2.csv",na.strings = c(NA,""," ","  "),stringsAsFactors = F)
 policies = read.csv("policies.csv",na.strings = c(NA,""," ","  "),stringsAsFactors = F)
 
-#save.image("summerschool.RData")
-
 #Begin analysis with "newcovid" file--------------------------------------
 #Get only the data for Australia in separate dataframes
 australia = newcovid[which(newcovid$Country.Region=="Australia"),]
