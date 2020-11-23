@@ -65,11 +65,6 @@ stringency_count = policies %>%
   group_by(CountryName) %>% 
     summarize(Counter=sum(counter)/200) #200 is the number of days from 2020-01-01 to 2020-07-18
 
-#save workspace
-#save.image("summerschool.RData")
-#K-means on counter
-#load("summerschool.RData") -> type this command in order to import the last data
-
 #Some descriptive statistics of the Stringency index
 
 max(policies$StringencyIndex,na.rm = T)
