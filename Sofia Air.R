@@ -1,37 +1,19 @@
 setwd("C:\\Users\\Georgi\\Desktop\\Data science\\R-working\\case_study")
 
-library(dplyr)
-library(lubridate)
-library(imputeTS)
-library(stringr)
-library(ggplot2)
-library(leaps)
-library(psych)
+#load packages
+requiredPackages = c("dplyr",	"lubridate",	"imputeTS",	"stringr",	"ggplot2",	"leaps",	
+     "psych",	"tseries",	"forecast",	"MASS",	"tree",	"randomForest",	"mgcv",	
+     "binaryLogic",	"TSA",	"boot",	"plotrix",	"synthpop",	"class",	"caret",	
+     "leaps",	"scorecard",	"Information",	"tidymodels",	"Metrics",	"ranger")
 
-library(tseries)
-library(forecast)
-library(MASS)
-library(tree)
-library(randomForest)
 
-library(mgcv)
-library(binaryLogic)
-library(TSA)
-library(boot)
-
-library(plotrix)
-library(synthpop)
-library(class)
-library(caret)
-library(leaps)
-library(scorecard)
-library(Information)
-library(tidymodels)
-library(Metrics)
-library(ranger)
+for(p in requiredPackages){
+  if(!require(p,character.only = TRUE)) install.packages(p)
+  library(p,character.only = TRUE)
+}
 
 #Data prep-------------------------------------------------------------------------------------------------------------------------------------------
-#Bulk import of data
+#Bulk import of data files
 files = list.files("C:\\Users\\Georgi\\Desktop\\Data science\\R-working\\case_study") #create a list of files to import
 
 data = lapply(files,read.csv,na.strings = c("","NA"," ",-9999),stringsAsFactors = F)  #import the list
@@ -665,6 +647,7 @@ draw_confusion_matrix <- function(cm) {
 
 windows()
 draw_confusion_matrix(cf5)
+
 
 
 
