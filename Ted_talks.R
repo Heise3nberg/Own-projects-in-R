@@ -1,38 +1,29 @@
 setwd("C:\\Users\\Georgi\\Desktop\\Data science\\R-working")
 
-library(lubridate)
-library(dplyr)
-library(imputeTS)
-library(stats)
-library(psych)
-library(dendextend)
-library(nFactors)
-library(DescTools)
+#load packages
+requiredPackages = c('lubridate','imputeTS','stats',"psych","dendextend","nFactors",
+                     "DescTools","sentimentr","stringr","SnowballC","dplyr",
+                     "quanteda","GPArotation","ngram","ggplot2","ggfortify")
 
-library(sentimentr)
-library(stringr)
-library(SnowballC)
-library(quanteda)
-library(GPArotation)
-library(ngram)
-library(ggplot2)
-library(ggfortify)
+for(p in requiredPackages){
+  if(!require(p,character.only = TRUE)) install.packages(p)
+  library(p,character.only = TRUE)
+}
 
+#import data
 tedmain = read.csv("ted_main.csv",na.strings = c(""," ","NA"), stringsAsFactors = FALSE)
 trans = read.csv("transcripts.csv",na.strings = c(""," ","NA"), stringsAsFactors = FALSE)
 
 # Summarize the variable class for each data frame
 mainclass = data.frame(names(tedmain),rapply(tedmain,class))
-
 colnames(mainclass) = c("Varname","Varclass")
 
-(length(unique(tedmain$name)))
-(length(unique(tedmain$url)))
-
 transclass = data.frame(names(trans),rapply(trans,class))
-
 colnames(transclass)=c("Varname","Varclass")
 
+#check for duplicates
+(length(unique(tedmain$name))) 
+(length(unique(tedmain$url))) 
 (length(unique(trans$url)))
 
 which(duplicated(trans$url)==T)
@@ -45,6 +36,7 @@ url = list()
 
 url$both = intersect(tedmain$url,trans$url)
 (length(url$both)) 
+
 url$tedmain = setdiff(tedmain$url,trans$url)
 (length(url$tedmain)) 
 
@@ -52,11 +44,16 @@ url$tedmain = setdiff(tedmain$url,trans$url)
 mergted = merge(trans,tedmain,by = "url")
 
 #test count extr with Ken Robinson: Do schools kill creativity?
+glimpse(tedmain)
 
-x = tedmain[1,]
+ted_name = "Do schools kill creativity?"
 
+ted = tedmain[which(tedmain$title == ted_name),]
+
+
+tedmain$ratings
 # Derive the ratings attached to this video
-rating = str_extract_all(x$ratings, "\\{[^{}]+\\}")
+rating = str_extract_all(ted$ratings, "\\{[^{}]+\\}")
 
 rating = unlist(rating)
 
@@ -78,7 +75,6 @@ krrt$count = as.numeric(as.character(krrt$count))
 krrt = krrt[order(krrt$count,decreasing = T),]
 
 #Extract all ratings
-
 ratings_list = list() 
 
 for (i in 1:nrow(mergted)){
@@ -99,8 +95,7 @@ for (i in 1:nrow(mergted)){
 mergted[,(ncol(mergted)+1):(ncol(mergted)+14)]=NA
 colnames(mergted)[19:ncol(mergted)] = ratings_list[[1]]$name
 
-#Double loop
-
+##Double loop to fill in ratings
 for (j in 1:14) {
   for(i in 1:nrow(mergted)){
     mergted[i,(18+j)] = ratings_list[[i]]$count[j]  
@@ -108,7 +103,6 @@ for (j in 1:14) {
   }
   
 }
-
 #Proceed with FA-----------------------------
 r = cor(mergted[,19:32])
 
@@ -173,7 +167,6 @@ sapply(cluster_data,class)
 
 #Clustering
 #########################################################################---------------
-
 cluster_data$Ratio = cluster_data[, "Excellent"] / cluster_data[, "Bad"]
 
 cluster_data$Ratio[which(!is.finite(cluster_data$Ratio))] = 0
@@ -361,7 +354,6 @@ depression$Count = as.numeric(as.character(depression$Count))
 depression = depression[order(depression$Count,decreasing = T),]
 
 #sentiments
-
 sent = get_sentences(dep$transcript)
 
 sent = unlist(sent)
@@ -392,6 +384,25 @@ deppos = wordStem(deppos)
 deppos = data.frame(table(deppos))
 
 deppos = deppos[order(deppos$Freq,decreasing=T),]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
