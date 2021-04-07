@@ -7,4 +7,4 @@
 
 3. SHARE income analysis - a personal income analysis of survey respondents, situated in 11 European countries, based on the SHARE research dataset.
 
-4. Covid19 policies analysis - an analysis of the numbers of covid-19 cases and different government policies done by countries, grouped in 3 clusters.
+
