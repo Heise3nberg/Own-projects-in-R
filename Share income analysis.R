@@ -1,24 +1,13 @@
 # Load libraries
-library(foreign)
-library(tibble) 
-library(dplyr)
+requiredPackages = c("foreign",	"tibble",	"dplyr", "lubridate", "imputeTS",
+                     "stats",	"psych",	"dendextend",	"nFactors",	"DescTools",
+                  "stringr",	"SnowballC",	"quanteda",	"GPArotation",	"ggplot2","arm","tidyverse")
 
-library(lubridate)
-library(imputeTS)
-library(stats)
-library(psych)
-library(dendextend)
-library(nFactors)
-library(DescTools)
+for(p in requiredPackages){
+    if(!require(p,character.only = TRUE)) install.packages(p)
+    library(p,character.only = TRUE)
+}
 
-library(stringr)
-library(SnowballC)
-library(quanteda)
-library(GPArotation)
-library(ggplot2)
-library(arm)
-
-rm(list = ls())
 setwd("C:\\Users\\Georgi\\Desktop\\Data science\\R-working")
 load("nn.RData")
 
@@ -100,7 +89,6 @@ for (i in 1:length(als$Age)) {
 table(als$jobstatus)
 
 #Income analysis----------------------------------------------------------------------
-
 inc = als
 
 #Cleanse useless values
@@ -143,6 +131,7 @@ inc = inc[-56,]
 
 #Begin Exploratory analysis----------------------------------------------------------------
 #Plot 
+windows()
 boxplot(
     inc$salary ~ inc$gender,
     xlab = "gender",
@@ -168,10 +157,21 @@ table(inc_outliers$gender)
 #Calculated average monthly payment for males and females
 gender_pay = inc  %>%
     group_by(gender) %>%
-    summarize(Pay = (mean(salary)/12))
+    summarize(Pay = (mean(salary)/12),median_pay = median(salary/12))
 
-print(paste("The average pay for women is:",gender_pay$Pay[1]))
-print(paste("The average pay for men is:",gender_pay$Pay[2]))
+#mean pay
+print(paste("The average monthly pay for women is:",gender_pay$Pay[1]))
+print(paste("The average monthly pay for men is:",gender_pay$Pay[2]))
+
+#median pay
+print(paste("The median monthly pay for women is:",gender_pay$median_pay[1]))
+print(paste("The median monthly pay for men is:",gender_pay$median_pay[2])) #median pay reduces the gap a little
+
+gap_mean = gender_pay$Pay[1] - gender_pay$Pay[2]
+gap_median = gender_pay$median_pay[1] - gender_pay$median_pay[2]
+
+print(gap_mean)
+print(gap_median)
 
 #The 1st percentile is mainly consisten of men, we will anaylize that later
 #Remove unnecessary columns
@@ -198,6 +198,8 @@ inc1$Age = as.numeric(as.character(inc1$Age))
 #Factor analysis
 c = cor(inc1[2:ncol(inc1)])
 
+#correlations
+windows()
 cor.plot(c)
 
 EV = eigen(c)
@@ -210,7 +212,6 @@ windows()
 plotnScree(NS)
 
 #Principal component analysis in order to better determine the number of underlying factors
-
 inc2 = as.data.frame(scale(inc1[2:5]),center=T,scale=T)
 
 PC = prcomp(inc2[2:4])
@@ -218,7 +219,7 @@ PC = prcomp(inc2[2:4])
 names(PC)
 summary(PC) #There are some latent variables in the dataset, but none of them is too significant
 
-#2 or 3 significant factors can be found in the data, one with 1.4EV and one with 1.2EV
+#2 highly signifficant factors can be found in the data, one with 1.4EV and one with 1.2EV
 
 fa = fa(inc1[2:5],nfactors = 3) #One factor which equals 18% of the variation the dataset
 print(fa)
@@ -227,16 +228,17 @@ windows()
 fa.diagram(fa)
 
 fa$loadings
-fa$weights #Age and gender are most significant for salary
+fa$weights #Age and gender are most significant for salary, as the corplot shows
 
 #Now lets examine how salaries differ by gender
 #Wage distribution modeling----------------------------------------------------
-
 table(inc1$gender) # we have 388 males and 496 females
 
+#create data frames for the salaries
 male_salaries  = data.frame(Salary=rep(0,1000))
 female_salaries = data.frame(Salary=rep(0,1000))
 
+#fill in male and female salaries with a loot
 for (i in 1:nrow(inc1)) {
     if (inc1$gender[i]==0)
         inc1$salary[i] -> male_salaries$Salary[i]
@@ -249,7 +251,10 @@ female_salaries$Salary[which(female_salaries$Salary==0)] = NA
 male_salaries = na.omit(male_salaries)
 female_salaries = na.omit(female_salaries)
 
+#quantile analysis
+windows()
 qqnorm(male_salaries$Salary,plot.it=TRUE, datax=TRUE)
+windows()
 qqnorm(female_salaries$Salary,plot.it=TRUE, datax=TRUE)
 
 windows()
@@ -270,7 +275,7 @@ table(inc1_outliers$gender)
 
 View(inc1_outliers)
 
-#Transform to normal distributions
+#Normalizaion of the variables for modelling purposes
 num_w =  496
 num_m = 388
 
@@ -283,10 +288,15 @@ sig_m = sd(male_salaries$Salary)/12
 dist_w = rnorm(num_w,mu_w,sig_w)
 dist_m = rnorm(num_m,mu_m,sig_m)
 
+#nonalized distribution of gender
 windows()
 hist(dist_w,freq=T,breaks = 20,main = "Feale salary distribution")
 windows()
 hist(dist_m,freq=T,breaks = 20,main = "Male salary distribution") #Check outliers in male distribution again
+
+#distribution of age of the entire sample
+windows()
+hist(inc1$Age,freq=T,breaks = 20,main = "Age") #age is normaly distributed
 
 wages = c(male_salaries$Salary, female_salaries$Salary)
 
@@ -297,6 +307,10 @@ print(cor(inc1$salary,inc1$country))
 
 eq1 = lm(formula = wages ~ gender)
 summary(eq1) #The average woman will make 7670 EUR per year less than the average male, or 639 EUR per month(all monetary amounts are in Euro)
+
+#include other factors:
+eq2 = lm(formula = wages ~ gender + inc1$Age + inc1$country)
+summary(eq2) # acording to the linear model, age is not a signifficant factor, with a CI of 69% 
 
 #Calculate average male and female salary by country
 by_country = inc %>%
@@ -326,3 +340,5 @@ View(gender_pay2)
 
 anova = aov(salary~country + gender + Age,data = inc1)
 summary(anova) #helps us to see directly the relavative weight of country, age and gender to the salary (F value)
+# we can conclude the analysis by establishing that the age and gender are the most signifficant variables which determine personal income
+
